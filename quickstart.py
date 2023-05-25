@@ -1,0 +1,60 @@
+import gspread
+from gspread_dataframe import set_with_dataframe
+from oauth2client.service_account import ServiceAccountCredentials
+import df2gspread as d2g
+import numpy as np
+import pandas as pd
+
+# 'chat.bot.kpi@gmail.com'
+
+def create_table_google_sheets(table_name):
+    # Подсоединение к Google Таблицам
+    scope = ['https://www.googleapis.com/auth/spreadsheets',
+         "https://www.googleapis.com/auth/drive"]
+
+    credentials = ServiceAccountCredentials.from_json_keyfile_name("cbappoitment-5965445a13a2.json", scope)
+    client = gspread.authorize(credentials)
+    client.create(table_name)
+
+
+def create_writer_google_sheets(table_name, email):
+    # Подсоединение к Google Таблицам
+    scope = ['https://www.googleapis.com/auth/spreadsheets',
+                 "https://www.googleapis.com/auth/drive"]
+
+    credentials = ServiceAccountCredentials.from_json_keyfile_name("cbappoitment-5965445a13a2.json", scope)
+    client = gspread.authorize(credentials)
+    client.open(table_name).share(email, perm_type='user', role='writer')
+
+
+def read_table_google_sheets(table_name, sheet_name):
+    # Подсоединение к Google Таблицам
+    scope = ['https://www.googleapis.com/auth/spreadsheets',
+                 "https://www.googleapis.com/auth/drive"]
+
+    credentials = ServiceAccountCredentials.from_json_keyfile_name("cbappoitment-5965445a13a2.json", scope)
+    client = gspread.authorize(credentials)
+    sheet = client.open(table_name).worksheet(sheet_name)
+    # print(sheet.get_all_values())
+    data = pd.DataFrame(sheet.get_all_values())
+    data.columns = np.array(data.iloc[1])
+    data = data.reindex(data.index.drop(0))
+    data = data.reindex(data.index.drop(1))
+    data.reset_index(drop=True, inplace=True)
+    return data
+
+
+
+def update_table_google_sheets(table_name, sheet_name, out_table):
+    # Подсоединение к Google Таблицам
+    scope = ['https://www.googleapis.com/auth/spreadsheets',
+                 "https://www.googleapis.com/auth/drive"]
+
+    credentials = ServiceAccountCredentials.from_json_keyfile_name("cbappoitment-5965445a13a2.json", scope)
+    client = gspread.authorize(credentials)
+    sheet = client.open(table_name).worksheet(sheet_name)
+
+    set_with_dataframe(sheet, out_table, row=2, include_column_header=True)
+
+
+
