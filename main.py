@@ -6,7 +6,7 @@ import pathlib
 import sqlite3 as sq
 
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from SQL import db_start, user_id_from_db, user_id_search_from_db, DB_replace_from_db, parametr_search_from_db, all_table_from_db, list_table_from_db, help_from_db
 from quickstart import create_writer_google_sheets, read_table_google_sheets, update_table_google_sheets
 
@@ -68,6 +68,14 @@ async def start(message: types.message):
 
 @bot.message_handler(content_types='text')
 async def handle_message(message: types.Message):
+    link_table_read = pd.DataFrame(await list_table_from_db(table_link))
+    def link_hide(link_table_read):
+        txt=""
+        for i in range(0, len(link_table_read)):
+            txt += f'<a href="{link_table_read[1][i]}">{link_table_read[0][i]} </a> \n'
+        return txt
+
+
     if message.text == 'Информация о прибытии':
         await botMes.send_message(text=f'{await parametr_search_from_db("user_name", table_name_db, message.chat.id)}, Вы прибываете в город Новосибирск, {await parametr_search_from_db("place_arrival", table_name_db, message.chat.id)} {await parametr_search_from_db("date_arrival", table_name_db, message.chat.id)} {await parametr_search_from_db("time_arrival", table_name_db, message.chat.id)}. \n'+
                              f'Вас будет встречать {await parametr_search_from_db("name_meeting", table_name_db, message.chat.id)}: {await parametr_search_from_db("phone_meeting", table_name_db, message.chat.id)} \n'+
@@ -82,7 +90,7 @@ async def handle_message(message: types.Message):
 
     elif message.text == 'Досуг':
         await botMes.send_message(text=f'{await parametr_search_from_db("user_name", table_name_db, message.chat.id)}, для того, чтобы Ваше пребывание в Новосибирске было более интересным, мы подготовили для Вас несколько ссылок. \n'+
-                        f'{await list_table_from_db(table_link)}', chat_id=message.chat.id)
+                        f'{link_hide(link_table_read)}', chat_id=message.chat.id, parse_mode=types.ParseMode.HTML)
 
     elif message.text == 'Помощь':
         await help_from_db(table_name_db=table_name_db, help_request='1', user_id=message.chat.id)
@@ -100,14 +108,25 @@ async def handle_message(message: types.Message):
     elif message.text == 'Обновить базу':
         db_table = await all_table_from_db(table_name_db)
         # print(db_table)
-        sh_table = read_table_google_sheets(table_SH_name, sheet_name)
+        sh_table = await read_table_google_sheets(table_SH_name, sheet_name)
         # print(sh_table)
         out_table = sh_table.copy()
-        for i in range(0, len(sh_table)):
-            out_table['user_ID'][i] = (db_table[db_table['user_phone'] == sh_table['user_phone'][i]]['user_ID'].values)[0]
+        out_table['user_ID'] = ""
+        # out_table['user_ID'] = out_table['user_ID'].fillna("0")
 
-        # out_table.to_sql('CBAppointment', sq.connect('appointment.db'), if_exists='replace', index=False)
-        update_table_google_sheets(table_SH_name, sheet_name, out_table)
+        for i in range(0, len(sh_table)):
+            try:
+                # print((db_table[sh_table['user_phone'] == db_table['user_phone'][i]]['user_ID']))
+                out_table['user_ID'][i] = (db_table[sh_table['user_phone'] == db_table['user_phone'][i]]['user_ID'].values)[0]
+            except:
+                out_table['user_ID'][i] = np.nan
+        # print(out_table['user_ID'][:])
+
+
+        out_table.to_sql('CBAppointment', sq.connect('appointment.db'), if_exists='replace', index=False)
+        sh_table_link = await read_table_google_sheets(table_SH_name, table_link)
+        sh_table_link.to_sql('Links', sq.connect('appointment.db'), if_exists='replace', index=False)
+        # await update_table_google_sheets(table_SH_name, sheet_name, out_table)
         await botMes.send_message(text='База данных успешно обновлена!', chat_id=message.chat.id)
 
     elif message.text == 'Получить доступ к таблице':
@@ -117,7 +136,7 @@ async def handle_message(message: types.Message):
 
     elif '@gmail.com' in message.text and await parametr_search_from_db("user_role", table_name_db, message.chat.id) == 'Админ':
         try:
-            create_writer_google_sheets(table_SH_name, message.text)
+            await create_writer_google_sheets(table_SH_name, message.text)
             await botMes.send_message(text='Вам предоставлены права на редактирование таблицы!', chat_id=message.chat.id)
         except:
             await botMes.send_message(text='Вы ввели неверный адрес электронной почты!',

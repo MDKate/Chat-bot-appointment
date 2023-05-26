@@ -7,7 +7,7 @@ import pandas as pd
 
 # 'chat.bot.kpi@gmail.com'
 
-def create_table_google_sheets(table_name):
+async def create_table_google_sheets(table_name):
     # Подсоединение к Google Таблицам
     scope = ['https://www.googleapis.com/auth/spreadsheets',
          "https://www.googleapis.com/auth/drive"]
@@ -17,7 +17,7 @@ def create_table_google_sheets(table_name):
     client.create(table_name)
 
 
-def create_writer_google_sheets(table_name, email):
+async def create_writer_google_sheets(table_name, email):
     # Подсоединение к Google Таблицам
     scope = ['https://www.googleapis.com/auth/spreadsheets',
                  "https://www.googleapis.com/auth/drive"]
@@ -27,7 +27,7 @@ def create_writer_google_sheets(table_name, email):
     client.open(table_name).share(email, perm_type='user', role='writer')
 
 
-def read_table_google_sheets(table_name, sheet_name):
+async def read_table_google_sheets(table_name, sheet_name):
     # Подсоединение к Google Таблицам
     scope = ['https://www.googleapis.com/auth/spreadsheets',
                  "https://www.googleapis.com/auth/drive"]
@@ -44,8 +44,7 @@ def read_table_google_sheets(table_name, sheet_name):
     return data
 
 
-
-def update_table_google_sheets(table_name, sheet_name, out_table):
+async def update_table_google_sheets(table_name, sheet_name, out_table):
     # Подсоединение к Google Таблицам
     scope = ['https://www.googleapis.com/auth/spreadsheets',
                  "https://www.googleapis.com/auth/drive"]

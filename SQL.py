@@ -12,6 +12,7 @@ async def db_start():
     result = cur.fetchone()
     if result is None:
         data = read_table_google_sheets("Чат-бот встреча", sheet_name)
+        data['user_ID'] = ""
         data.to_sql(table_name, sq.connect('appointment.db'), index=False)
     table_name = 'Links'
     sheet_name = "Links"
@@ -41,10 +42,11 @@ async def user_id_search_from_db(table_name_db, user_phone):
 
 async def list_table_from_db(table_name_db):
     df = pd.read_sql(f"SELECT * FROM {table_name_db}", sq.connect('appointment.db')).values
-    txt = ""
-    for i in range(0, len(df)):
-        txt+= df[i][0] + " " + df[i][1] + "\n"
-    return txt
+    # txt = ""
+    # for i in range(0, len(df)):
+    #     txt+= df[i][0] + " " + df[i][1] + "\n"
+    # return txt
+    return df
 
 async def all_table_from_db(table_name_db):
     df = pd.read_sql(f"SELECT * FROM {table_name_db}", sq.connect('appointment.db'))
