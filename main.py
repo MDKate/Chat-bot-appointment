@@ -7,13 +7,13 @@ import sqlite3 as sq
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-from SQL import db_start, user_id_from_db, user_id_search_from_db, DB_replace_from_db, parametr_search_from_db, all_table_from_db, list_table_from_db, help_from_db
-from quickstart import create_writer_google_sheets, read_table_google_sheets, update_table_google_sheets
+from SQL import db_start, user_id_from_db, user_id_search_from_db, DB_replace_from_db, parametr_search_from_db, all_table_from_db, list_table_from_db, help_from_db, table_help_insert_from_db
+from quickstart import create_writer_google_sheets, read_table_google_sheets, update_table_google_sheets, create_table_google_sheets
 
 botMes = Bot(open(os.path.abspath('token.txt')).read())
 bot = Dispatcher(botMes)
 
-table_SH_name = 'Чат-бот встреча'
+table_SH_name = 'testT'
 sheet_name = 'DB'
 table_name_db = 'CBAppointment'
 table_link = "Links"
@@ -99,8 +99,10 @@ async def handle_message(message: types.Message):
 
     elif await parametr_search_from_db('help_request', table_name_db, message.chat.id) == '1':
         await help_from_db(table_name_db, '0', message.chat.id)
+        hID = await table_help_insert_from_db(message.chat.id, message.text)
         await botMes.send_message(text='Ваше сообщение отправлено! Администратор скоро с вами свяжется!', chat_id=message.chat.id)
         await botMes.send_message(text='Добрый день! Вам пришел запрос на помощь: \n'+
+                                  f'№ запроса: {hID} \n'+
                                   f'От: {await parametr_search_from_db("user_name", table_name_db, message.chat.id)} \n'+
                                   f'Телефон: {await parametr_search_from_db("user_phone", table_name_db, message.chat.id)} \n'+
                                   f'Текст вопроса: {message.text} \n', chat_id='920154651')
@@ -165,7 +167,7 @@ async def contacts(message: types.Message, table_name_db=table_name_db):
         else:
             await message.reply(f"Здравствуйте, {await parametr_search_from_db('user_name', table_name_db, message.chat.id)}! \n"
                                 "Вы зарегистрированы в роли админа.")
-            buttons = [['Информация о прибытии', 'Информация о гостинице'], ['Информация об отъезде', 'Досуг'], ['Обновить базу', 'Получить доступ к таблице']]
+            buttons = [['Информация о прибытии', 'Информация о гостинице'], ['Информация об отъезде', 'Досуг'], ['Обновить базу', 'Получить доступ к таблице'],['Помощь']]
         markup = ReplyKeyboardMarkup(buttons, resize_keyboard=True, one_time_keyboard=False)
         await botMes.send_message(chat_id=message.chat.id, text='Что вы хотите узнать?', reply_markup=markup)
 

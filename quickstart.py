@@ -29,6 +29,7 @@ async def create_writer_google_sheets(table_name, email):
 
 async def read_table_google_sheets(table_name, sheet_name):
     # Подсоединение к Google Таблицам
+    # print(1)
     scope = ['https://www.googleapis.com/auth/spreadsheets',
                  "https://www.googleapis.com/auth/drive"]
 
@@ -41,6 +42,7 @@ async def read_table_google_sheets(table_name, sheet_name):
     data = data.reindex(data.index.drop(0))
     data = data.reindex(data.index.drop(1))
     data.reset_index(drop=True, inplace=True)
+    # print(data)
     return data
 
 
