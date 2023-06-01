@@ -13,18 +13,18 @@ async def db_start(): #Создание БД
     result = cur.fetchone()
     if result is None:
         # data = read_table_google_sheets("Чат-бот встреча", sheet_name)
-        data = await read_table_google_sheets("testT", sheet_name)
+        data = await read_table_google_sheets("Бот: встреча", sheet_name)
         data['user_ID'] = ""
         data['help_request'] = ""
         data.to_sql(table_name, sq.connect('appointment.db'), index=False)
-        ID = pd.read_csv(os.path.abspath("ID.csv"), delimiter=";")
+        ID = pd.read_excel(os.path.abspath("ID.xlsx"))
         ID.to_sql("ID", sq.connect('appointment.db'), index=False)
-        IDTM = pd.read_csv(os.path.abspath("IDTM.csv"), delimiter=";")
+        IDTM = pd.read_excel(os.path.abspath("IDTM.xlsx"))
         IDTM.to_sql("IDTM", sq.connect('appointment.db'), index=False)
-        IDTD = pd.read_csv(os.path.abspath("IDTD.csv"), delimiter=";")
+        IDTD = pd.read_excel(os.path.abspath("IDTD.xlsx"))
         IDTD.to_sql("IDTD", sq.connect('appointment.db'), index=False)
 
-        helpR = pd.Dataframe(columns=['ID_help', 'user_ID', 'text_message'])
+        helpR = pd.DataFrame(columns=['ID_help', 'user_ID', 'text_message'])
         helpR.to_sql("Help", sq.connect('appointment.db'), index=False)
 
 
@@ -34,7 +34,7 @@ async def db_start(): #Создание БД
     result = cur.fetchone()
     if result is None:
         # data = read_table_google_sheets("Чат-бот встреча", sheet_name)
-        data = await read_table_google_sheets("testT", sheet_name)
+        data = await read_table_google_sheets("Бот: встреча", sheet_name)
         data.to_sql(table_name, sq.connect('appointment.db'), index=False)
     db.commit()
 
@@ -91,8 +91,8 @@ async def list_table_from_db(table_name_db): #Возвращение списк�
 async def all_table_from_db(table_name_db): #Чтение всей таблицы во фрейм
     df = pd.read_sql(f"SELECT * "
                      f"FROM {table_name_db} AS A JOIN ID AS B ON A.ID = B.ID "
-                     f"AND A JOIN IDTM AS C ON A.IDTM = C.IDTM "
-                     f"AND A JOIN IDTD AS D ON A.IDTD = D.IDTD ",
+                     f"JOIN IDTM AS C ON A.IDTM = C.IDTM "
+                     f"JOIN IDTD AS D ON A.IDTD = D.IDTD ",
                      sq.connect('appointment.db'))
     return df
 
