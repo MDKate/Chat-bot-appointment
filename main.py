@@ -63,7 +63,7 @@ async def start(message: types.message):
     request_contact_button = KeyboardButton(text="Отправить контакт", request_contact=True)
     reply_markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     reply_markup.add(request_contact_button)
-    await message.reply("Добрый день! Для начала работы с ботом необходимо зарегистрироваться по номеру телефона. \nДля этого, нажмите на кнопку 'Отправить контакт' внизу экрана.",
+    await message.reply("Добрый день! Для начала работы с ботом необходимо зарегистрироваться по номеру телефона. \nДля этого нажмите на кнопку 'Отправить контакт' внизу экрана.",
                         reply_markup=reply_markup)  # Выводим сопутствующее сообщение
 
 @bot.message_handler(content_types=types.ContentType.DOCUMENT)
@@ -111,7 +111,7 @@ async def handle_message(message: types.Message):
     elif message.text == 'Помощь':
         await help_from_db(table_name_db=table_name_db, help_request='1', user_id=message.chat.id)
         await botMes.send_message(text='Что вас интересует? \n'+
-                                  'Напишите ваш вопрос, и бот перешлет его администратору.', chat_id=message.chat.id)
+                                  'Напишите ваш вопрос, и бот перешлет его организаторам.', chat_id=message.chat.id)
 
     elif message.text == 'Брошюра':
         await botMes.send_message(text='Этот раздел еще в разработке.',
@@ -124,12 +124,16 @@ async def handle_message(message: types.Message):
     elif await parametr_search_from_db('help_request', table_name_db, message.chat.id) == '1':
         await help_from_db(table_name_db, '0', message.chat.id)
         hID = await table_help_insert_from_db(message.chat.id, message.text)
-        await botMes.send_message(text='Ваше сообщение отправлено! Администратор скоро с вами свяжется!', chat_id=message.chat.id)
+        phoneMeeting = "+" + str(await parametr_search_from_db("user_phone", table_name_db, message.chat.id))
+        buttons = [['Информация о прибытии', 'Информация о гостинице'], ['Информация об отъезде', 'Досуг'],
+                   ['Помощь', 'Информационный канал']]
+        markup = ReplyKeyboardMarkup(buttons, resize_keyboard=True, one_time_keyboard=False)
+        await botMes.send_message(text='Спасибо за обращение! Команда поддержки свяжется с вами в ближайшее время', chat_id=message.chat.id, reply_markup=markup)
         await botMes.send_message(text='Добрый день! Вам пришел запрос на помощь: \n'+
                                   f'№ запроса: {hID} \n'+
                                   f'От: {await parametr_search_from_db("user_name", table_name_db, message.chat.id)} \n'+
-                                  f'Телефон: {await parametr_search_from_db("user_phone", table_name_db, message.chat.id)} \n'+
-                                  f'Текст вопроса: {message.text} \n', chat_id='-958545378')
+                                  f'Телефон: <a href="{phoneMeeting}">{phoneMeeting}</a> \n'+
+                                  f'Текст вопроса: {message.text} \n', chat_id='-1001937614226', parse_mode=types.ParseMode.HTML)
 
     elif message.text == 'Обновить основную таблицу':
         db_table = await all_table_from_db(table_name_db)
@@ -197,9 +201,9 @@ async def contacts(message: types.Message, table_name_db=table_name_db):
     else:
         await user_id_from_db(table_name_db = table_name_db, user_id = message.chat.id, user_phone = message.contact.phone_number)
         if await parametr_search_from_db("user_role", table_name_db, message.chat.id) == "Гость":
-            await message.reply(f'Добро пожаловать в телеграм-бот совещания "Деятельность территориальных учреждений Банка России по развитию финансового рынка в регионах Россифйской федерации", которое состоится 26.06.2023-30.06.2023 на базе Сибирского ГУ Банка России. Здесь Вы можете узнать актуальную информацию о вашем пребывании в Новосибирске. При возникновении любых вопросов Вы можете воспользоваться кнопкой "Помощь", и наша команда поддержки ответит Вам в кратчайшие сроки')
+            await message.reply(f'Добро пожаловать в телеграм-бот совещания "Деятельность территориальных учреждений Банка России по развитию финансового рынка в регионах Российской федерации", которое состоится 26.06.2023-30.06.2023 на базе Сибирского ГУ Банка России. Здесь Вы можете узнать актуальную информацию о вашем пребывании в Новосибирске. При возникновении любых вопросов Вы можете воспользоваться кнопкой "Помощь", и наша команда поддержки ответит Вам в кратчайшие сроки')
             buttons = [['Информация о прибытии', 'Информация о гостинице'], ['Информация об отъезде', 'Досуг'],
-                       ['Помощь', 'Брошюра'], ['Информационный канал']]
+                       ['Помощь', 'Информационный канал']]
         else:
             await message.reply(f"Здравствуйте, {await parametr_search_from_db('user_name', table_name_db, message.chat.id)}! \n"
                                 "Вы зарегистрированы в роли Администратора.")

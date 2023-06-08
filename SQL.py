@@ -49,10 +49,7 @@ async def user_id_from_db(table_name_db, user_id, user_phone): #Вносим н�
 
 async def help_from_db(table_name_db, help_request, user_id): #Создаем пометку о необходимости помощи
     sql_update_query = f"""Update {table_name_db} as A set help_request = {help_request} 
-    where A.ID = (
-        select ID
-        from ID
-        where user_id = {user_id})"""
+    where  user_ID = {user_id}"""
     cur.execute(sql_update_query)
     db.commit()
 
