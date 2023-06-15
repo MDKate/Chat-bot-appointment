@@ -101,7 +101,8 @@ async def handle_message(message: types.Message):
 
     elif message.text == 'Информация об отъезде':
         driverPhone = "+" + str(await parametr_search_from_db("driver_phone", table_name_db, message.chat.id))
-        await botMes.send_message(text=f'{await parametr_search_from_db("user_name", table_name_db, message.chat.id)}, Ваш отъезд из гостиницы состоится {await parametr_search_from_db("date_departure", table_name_db, message.chat.id)} {await parametr_search_from_db("time_departure", table_name_db, message.chat.id)}. Вас будет ожидать {await parametr_search_from_db("car_brand", table_name_db, message.chat.id)} {await parametr_search_from_db("number_seats", table_name_db, message.chat.id)} {await parametr_search_from_db("car_registration_number", table_name_db, message.chat.id)}. \n '+
+        # Вас будет ожидать {await parametr_search_from_db("car_brand", table_name_db, message.chat.id)} {await parametr_search_from_db("number_seats", table_name_db, message.chat.id)} {await parametr_search_from_db("car_registration_number", table_name_db, message.chat.id)}.
+        await botMes.send_message(text=f'{await parametr_search_from_db("user_name", table_name_db, message.chat.id)}, Ваш отъезд из гостиницы состоится {await parametr_search_from_db("date_departure", table_name_db, message.chat.id)} {await parametr_search_from_db("time_departure", table_name_db, message.chat.id)}.  \n '+
                                        f'Вас будет сопровождать {await parametr_search_from_db("driver_name", table_name_db, message.chat.id)} <a href="{driverPhone}">{driverPhone}</a>. Ваш рейс № {await parametr_search_from_db("departure_flight_number", table_name_db, message.chat.id)} отправляется {await parametr_search_from_db("date_departure", table_name_db, message.chat.id)} {await parametr_search_from_db("time_departure", table_name_db, message.chat.id)}', chat_id=message.chat.id, parse_mode=types.ParseMode.HTML)
 
     elif message.text == 'Досуг':
