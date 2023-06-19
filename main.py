@@ -198,7 +198,14 @@ async def handle_message(message: types.Message):
 async def contacts(message: types.Message, table_name_db=table_name_db):
     calB = await user_id_search_from_db(table_name_db, message.contact.phone_number)
     if calB is None:
-        await message.reply(f"Вас нет в базе участников мероприятия! Пожалуйста, обратитесь за консультацией  к администраторам.")
+        await message.reply(f"Вас нет в базе данных участников мероприятия! Ваш контакт направлен организаторам для включения в список участников. Организаторы скоро с вами свяжутся.")
+        await botMes.send_message(text='Добрый день! Вам пришел запрос на регистрацию на мероприятие: \n' +
+                                       f'От: {message.contact.full_name} \n' +
+                                       f'Телефон: <a href="+{message.contact.phone_number}">+{message.contact.phone_number}</a>'
+                                       , chat_id='-1001937614226',
+                                  parse_mode=types.ParseMode.HTML)
+
+
     else:
         await user_id_from_db(table_name_db = table_name_db, user_id = message.chat.id, user_phone = message.contact.phone_number)
         if await parametr_search_from_db("user_role", table_name_db, message.chat.id) == "Гость":
@@ -207,7 +214,7 @@ async def contacts(message: types.Message, table_name_db=table_name_db):
                        ['Помощь', 'Информационный канал']]
         else:
             await message.reply(f"Здравствуйте, {await parametr_search_from_db('user_name', table_name_db, message.chat.id)}! \n"
-                                "Вы зарегистрированы в роли Администратора.")
+                                "Вы зарегистрированы в роли Организатора.")
             buttons = [['Информация о прибытии', 'Информация о гостинице'], ['Информация об отъезде', 'Досуг'], ['Обновить основную таблицу', 'Обновить таблицу ПД'], ['Получить доступ к таблице']]
         markup = ReplyKeyboardMarkup(buttons, resize_keyboard=True, one_time_keyboard=False)
         await botMes.send_message(chat_id=message.chat.id, text='Что вы хотите узнать?', reply_markup=markup)
