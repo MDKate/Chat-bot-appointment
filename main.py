@@ -91,7 +91,7 @@ async def handle_message(message: types.Message):
 
 
     if message.text == 'Информация о прибытии':
-        if await parametr_search_from_db("phone_meeting", table_name_db, message.chat.id) is None:
+        if await parametr_search_from_db("phone_meeting", table_name_db, message.chat.id) is None or len(str(await parametr_search_from_db("phone_meeting", table_name_db, message.chat.id)))<3:
             await botMes.send_message(text=f'Данные по вашему прибытию еще не обновлены! Пожалуйста, напишите о проблеме <a href="@Moiseeva_Ekaterina">@Moiseeva_Ekaterina</a>.', chat_id=message.chat.id, parse_mode=types.ParseMode.HTML)
         else:
             phoneMeeting = "+" + str(int(await parametr_search_from_db("phone_meeting", table_name_db, message.chat.id)))
@@ -103,7 +103,8 @@ async def handle_message(message: types.Message):
         await botMes.send_message(text=f'{await parametr_search_from_db("user_name", table_name_db, message.chat.id)}, Вы проживаете в гостинице {await parametr_search_from_db("hotel_name", table_name_db, message.chat.id)}, {await parametr_search_from_db("hotel_address", table_name_db, message.chat.id)}, {await parametr_search_from_db("hotel_website", table_name_db, message.chat.id)}', chat_id=message.chat.id)
 
     elif message.text == 'Информация об отъезде':
-        if await parametr_search_from_db("driver_phone", table_name_db, message.chat.id) is None:
+        if await parametr_search_from_db("driver_phone", table_name_db, message.chat.id) is None or len(str(await parametr_search_from_db("driver_phone", table_name_db, message.chat.id)))<3:
+
             await botMes.send_message(text=f'Данные по вашему отбытию еще не обновлены! Пожалуйста, напишите о проблеме <a href="@Moiseeva_Ekaterina">@Moiseeva_Ekaterina</a>.', chat_id=message.chat.id, parse_mode=types.ParseMode.HTML)
         else:
             driverPhone = "+" + str(int(await parametr_search_from_db("driver_phone", table_name_db, message.chat.id)))
@@ -132,7 +133,7 @@ async def handle_message(message: types.Message):
     elif await parametr_search_from_db('help_request', table_name_db, message.chat.id) == '1':
         await help_from_db(table_name_db, '0', message.chat.id)
         hID = await table_help_insert_from_db(message.chat.id, message.text)
-        if await parametr_search_from_db("user_phone", table_name_db, message.chat.id) is None:
+        if await parametr_search_from_db("user_phone", table_name_db, message.chat.id) is None or len(str(await parametr_search_from_db("user_phone", table_name_db, message.chat.id)))<3:
             await botMes.send_message(text=f'Данные еще не обновлены! Пожалуйста, напишите о проблеме <a href="@Moiseeva_Ekaterina">@Moiseeva_Ekaterina</a>.', chat_id=message.chat.id, parse_mode=types.ParseMode.HTML)
         else:
             phoneMeeting = "+" + str(int(await parametr_search_from_db("user_phone", table_name_db, message.chat.id)))
