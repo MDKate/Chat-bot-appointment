@@ -91,8 +91,11 @@ async def handle_message(message: types.Message):
 
 
     if message.text == 'Информация о прибытии':
-        phoneMeeting = "+" + str(int(await parametr_search_from_db("phone_meeting", table_name_db, message.chat.id)))
-        await botMes.send_message(text=f'{await parametr_search_from_db("user_name", table_name_db, message.chat.id)}, Вы прибываете в город Новосибирск, {await parametr_search_from_db("place_arrival", table_name_db, message.chat.id)} {await parametr_search_from_db("date_arrival", table_name_db, message.chat.id)} {await parametr_search_from_db("time_arrival", table_name_db, message.chat.id)}. \n'+
+        if await parametr_search_from_db("phone_meeting", table_name_db, message.chat.id) is None:
+            await botMes.send_message(text=f'Данные по вашему прибытию еще не обновлены! Пожалуйста, напишите о проблеме <a href="@Moiseeva_Ekaterina">@Moiseeva_Ekaterina</a>.', chat_id=message.chat.id, parse_mode=types.ParseMode.HTML)
+        else:
+            phoneMeeting = "+" + str(int(await parametr_search_from_db("phone_meeting", table_name_db, message.chat.id)))
+            await botMes.send_message(text=f'{await parametr_search_from_db("user_name", table_name_db, message.chat.id)}, Вы прибываете в город Новосибирск, {await parametr_search_from_db("place_arrival", table_name_db, message.chat.id)} {await parametr_search_from_db("date_arrival", table_name_db, message.chat.id)} {await parametr_search_from_db("time_arrival", table_name_db, message.chat.id)}. \n'+
                              f'Вас будет встречать {await parametr_search_from_db("name_meeting", table_name_db, message.chat.id)} <a href="{phoneMeeting}">{phoneMeeting}</a> \n'+
                              f'Ваш номер рейса {await parametr_search_from_db("arrival_flight_number", table_name_db, message.chat.id)}', chat_id=message.chat.id, parse_mode=types.ParseMode.HTML)
 
@@ -100,9 +103,12 @@ async def handle_message(message: types.Message):
         await botMes.send_message(text=f'{await parametr_search_from_db("user_name", table_name_db, message.chat.id)}, Вы проживаете в гостинице {await parametr_search_from_db("hotel_name", table_name_db, message.chat.id)}, {await parametr_search_from_db("hotel_address", table_name_db, message.chat.id)}, {await parametr_search_from_db("hotel_website", table_name_db, message.chat.id)}', chat_id=message.chat.id)
 
     elif message.text == 'Информация об отъезде':
-        driverPhone = "+" + str(int(await parametr_search_from_db("driver_phone", table_name_db, message.chat.id)))
-        # Вас будет ожидать {await parametr_search_from_db("car_brand", table_name_db, message.chat.id)} {await parametr_search_from_db("number_seats", table_name_db, message.chat.id)} {await parametr_search_from_db("car_registration_number", table_name_db, message.chat.id)}.
-        await botMes.send_message(text=f'{await parametr_search_from_db("user_name", table_name_db, message.chat.id)}, Ваш отъезд из гостиницы состоится {await parametr_search_from_db("date_departure", table_name_db, message.chat.id)} {await parametr_search_from_db("time_departure", table_name_db, message.chat.id)}.  \n '+
+        if await parametr_search_from_db("driver_phone", table_name_db, message.chat.id) is None:
+            await botMes.send_message(text=f'Данные по вашему отбытию еще не обновлены! Пожалуйста, напишите о проблеме <a href="@Moiseeva_Ekaterina">@Moiseeva_Ekaterina</a>.', chat_id=message.chat.id, parse_mode=types.ParseMode.HTML)
+        else:
+            driverPhone = "+" + str(int(await parametr_search_from_db("driver_phone", table_name_db, message.chat.id)))
+            # Вас будет ожидать {await parametr_search_from_db("car_brand", table_name_db, message.chat.id)} {await parametr_search_from_db("number_seats", table_name_db, message.chat.id)} {await parametr_search_from_db("car_registration_number", table_name_db, message.chat.id)}.
+            await botMes.send_message(text=f'{await parametr_search_from_db("user_name", table_name_db, message.chat.id)}, Ваш отъезд из гостиницы состоится {await parametr_search_from_db("date_departure", table_name_db, message.chat.id)} {await parametr_search_from_db("time_departure", table_name_db, message.chat.id)}.  \n '+
                                        f'Вас будет сопровождать {await parametr_search_from_db("driver_name", table_name_db, message.chat.id)} <a href="{driverPhone}">{driverPhone}</a>. Ваш рейс № {await parametr_search_from_db("departure_flight_number", table_name_db, message.chat.id)}.', chat_id=message.chat.id, parse_mode=types.ParseMode.HTML)
                                        # f'Вас будет сопровождать {await parametr_search_from_db("driver_name", table_name_db, message.chat.id)} <a href="{driverPhone}">{driverPhone}</a>. Ваш рейс № {await parametr_search_from_db("departure_flight_number", table_name_db, message.chat.id)} отправляется {await parametr_search_from_db("date_departure", table_name_db, message.chat.id)} {await parametr_search_from_db("time_departure", table_name_db, message.chat.id)}', chat_id=message.chat.id, parse_mode=types.ParseMode.HTML)
 
@@ -126,12 +132,15 @@ async def handle_message(message: types.Message):
     elif await parametr_search_from_db('help_request', table_name_db, message.chat.id) == '1':
         await help_from_db(table_name_db, '0', message.chat.id)
         hID = await table_help_insert_from_db(message.chat.id, message.text)
-        phoneMeeting = "+" + str(int(await parametr_search_from_db("user_phone", table_name_db, message.chat.id)))
-        buttons = [['Информация о прибытии', 'Информация о гостинице'], ['Информация об отъезде', 'Досуг'],
+        if await parametr_search_from_db("user_phone", table_name_db, message.chat.id) is None:
+            await botMes.send_message(text=f'Данные еще не обновлены! Пожалуйста, напишите о проблеме <a href="@Moiseeva_Ekaterina">@Moiseeva_Ekaterina</a>.', chat_id=message.chat.id, parse_mode=types.ParseMode.HTML)
+        else:
+            phoneMeeting = "+" + str(int(await parametr_search_from_db("user_phone", table_name_db, message.chat.id)))
+            buttons = [['Информация о прибытии', 'Информация о гостинице'], ['Информация об отъезде', 'Досуг'],
                    ['Помощь', 'Информационный канал']]
-        markup = ReplyKeyboardMarkup(buttons, resize_keyboard=True, one_time_keyboard=False)
-        await botMes.send_message(text='Спасибо за обращение! Команда поддержки свяжется с вами в ближайшее время', chat_id=message.chat.id, reply_markup=markup)
-        await botMes.send_message(text='Добрый день! Вам пришел запрос на помощь: \n'+
+            markup = ReplyKeyboardMarkup(buttons, resize_keyboard=True, one_time_keyboard=False)
+            await botMes.send_message(text='Спасибо за обращение! Команда поддержки свяжется с вами в ближайшее время', chat_id=message.chat.id, reply_markup=markup)
+            await botMes.send_message(text='Добрый день! Вам пришел запрос на помощь: \n'+
                                   f'№ запроса: {hID} \n'+
                                   f'От: {await parametr_search_from_db("user_name", table_name_db, message.chat.id)} \n'+
                                   f'Телефон: <a href="{phoneMeeting}">{phoneMeeting}</a> \n'+
@@ -197,7 +206,7 @@ async def handle_message(message: types.Message):
 
 @bot.message_handler(content_types=types.ContentType.CONTACT)
 async def contacts(message: types.Message, table_name_db=table_name_db):
-    calB = str((await user_id_search_from_db(table_name_db, message.contact.phone_number)))
+    calB = await user_id_search_from_db(table_name_db, message.contact.phone_number)
     if calB is None:
         await message.reply(f"Вас нет в базе данных участников мероприятия! Ваш контакт направлен организаторам для включения в список участников. Организаторы скоро с вами свяжутся.")
         await botMes.send_message(text='Добрый день! Вам пришел запрос на регистрацию на мероприятие: \n' +
