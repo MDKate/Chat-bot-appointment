@@ -54,9 +54,12 @@ async def help_from_db(table_name_db, help_request, user_id): #Создаем п
     db.commit()
 
 async def table_help_insert_from_db(user_id, text_message): #Создаем пометку о необходимости помощи
-    cur.execute(f"SELECT MAX(ID_help) FROM Help")
-    result = cur.fetchone()
-    hID = result[0] if not result[0] is None else 0
+    # cur.execute(f"SELECT MAX(ID_help) FROM Help")
+    # result = cur.fetchone()
+    # hID = result[0] if not result[0] is None else 0
+    df = pd.read_sql(f"SELECT * FROM help",
+                     sq.connect('appointment.db'))
+    hID = len(df) if not len(df) is None else 0
     text_message = text_message.replace("'", "*")
     text_message = text_message.replace('"', "*")
     sql_update_query = f"""INSERT INTO Help(ID_help, user_ID, text_message) 
