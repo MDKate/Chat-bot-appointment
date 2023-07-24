@@ -27,6 +27,21 @@ async def db_start(): #Создание БД
         helpR = pd.DataFrame(columns=['ID_help', 'user_ID', 'text_message'])
         helpR.to_sql("Help", sq.connect('appointment.db'), index=False)
 
+    cur.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='ID'")
+    result = cur.fetchone()
+    if result is None:
+        ID = pd.read_excel(os.path.abspath("ID.xlsx"))
+        ID.to_sql("ID", sq.connect('appointment.db'), index=False)
+    cur.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='IDTM'")
+    result = cur.fetchone()
+    if result is None:
+        IDTM = pd.read_excel(os.path.abspath("IDTM.xlsx"))
+        IDTM.to_sql("IDTM", sq.connect('appointment.db'), index=False)
+    cur.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='IDTD'")
+    result = cur.fetchone()
+    if result is None:
+        IDTD = pd.read_excel(os.path.abspath("IDTD.xlsx"))
+        IDTD.to_sql("IDTD", sq.connect('appointment.db'), index=False)
 
     table_name = 'Links'
     sheet_name = "Links"
@@ -47,7 +62,7 @@ async def user_id_from_db(table_name_db, user_id, user_phone): #Вносим н�
     cur.execute(sql_update_query)
     db.commit()
 
-async def help_from_db(table_name_db, help_request, user_id): #Создаем пометку о необходимости помощи
+async def help_from_db(table_name_db, help_request, user_id): #Вносим чат-айди
     sql_update_query = f"""Update {table_name_db} as A set help_request = {help_request} 
     where  user_ID = {user_id}"""
     cur.execute(sql_update_query)

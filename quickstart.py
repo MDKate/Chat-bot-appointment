@@ -7,7 +7,7 @@ import pandas as pd
 
 # 'chat.bot.kpi@gmail.com'
 
-async def create_table_google_sheets(table_name):
+async def create_table_google_sheets(table_name): #Создание новой таблицы
     # Подсоединение к Google Таблицам
     scope = ['https://www.googleapis.com/auth/spreadsheets',
          "https://www.googleapis.com/auth/drive"]
@@ -17,7 +17,7 @@ async def create_table_google_sheets(table_name):
     client.create(table_name)
 
 
-async def create_writer_google_sheets(table_name, email):
+async def create_writer_google_sheets(table_name, email): #Добавление нового редактора в таблицу
     # Подсоединение к Google Таблицам
     scope = ['https://www.googleapis.com/auth/spreadsheets',
                  "https://www.googleapis.com/auth/drive"]
@@ -27,7 +27,7 @@ async def create_writer_google_sheets(table_name, email):
     client.open(table_name).share(email, perm_type='user', role='writer')
 
 
-async def read_table_google_sheets(table_name, sheet_name):
+async def read_table_google_sheets(table_name, sheet_name): #Считать таблицу во фрейм (с отступами по шапке)
     # Подсоединение к Google Таблицам
     # print(1)
     scope = ['https://www.googleapis.com/auth/spreadsheets',
@@ -46,7 +46,7 @@ async def read_table_google_sheets(table_name, sheet_name):
     return data
 
 
-async def update_table_google_sheets(table_name, sheet_name, out_table):
+async def update_table_google_sheets(table_name, sheet_name, out_table): #Обновить гугл-таблицу
     # Подсоединение к Google Таблицам
     scope = ['https://www.googleapis.com/auth/spreadsheets',
                  "https://www.googleapis.com/auth/drive"]
