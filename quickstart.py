@@ -7,7 +7,7 @@ import pandas as pd
 
 # 'chat.bot.kpi@gmail.com'
 
-async def create_table_google_sheets(table_name): #Создание новой таблицы
+async def create_table_google_sheets(table_name): #Создание новой таблицы (не используется)
     # Подсоединение к Google Таблицам
     scope = ['https://www.googleapis.com/auth/spreadsheets',
          "https://www.googleapis.com/auth/drive"]
@@ -21,9 +21,11 @@ async def create_writer_google_sheets(table_name, email): #Добавление 
     # Подсоединение к Google Таблицам
     scope = ['https://www.googleapis.com/auth/spreadsheets',
                  "https://www.googleapis.com/auth/drive"]
-
+    #Подсоединение к гугл-апи
     credentials = ServiceAccountCredentials.from_json_keyfile_name("cbappoitment-5965445a13a2.json", scope)
+    #Авторизация
     client = gspread.authorize(credentials)
+    #Добавление редактора
     client.open(table_name).share(email, perm_type='user', role='writer')
 
 
@@ -35,9 +37,11 @@ async def read_table_google_sheets(table_name, sheet_name): #Считать та
 
     credentials = ServiceAccountCredentials.from_json_keyfile_name("cbappoitment-5965445a13a2.json", scope)
     client = gspread.authorize(credentials)
+    #Счить таблицу
     sheet = client.open(table_name).worksheet(sheet_name)
     # print(sheet.get_all_values())
     data = pd.DataFrame(sheet.get_all_values())
+    #Убрать лишние строки
     data.columns = np.array(data.iloc[1])
     data = data.reindex(data.index.drop(0))
     data = data.reindex(data.index.drop(1))

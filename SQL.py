@@ -4,40 +4,45 @@ import pandas as pd
 from quickstart import create_table_google_sheets, read_table_google_sheets
 
 async def db_start(): #Создание БД
+    #Подключаемся к бд
     global db, cur
     db = sq.connect('appointment.db')
     cur = db.cursor()
     table_name = 'CBAppointment'
     sheet_name = "DB"
+    #Проверка на существование таблицы
     cur.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'")
     result = cur.fetchone()
+    #Если таблицы нет
     if result is None:
-        # data = read_table_google_sheets("Чат-бот встреча", sheet_name)
+        # Считываем таблицу из гугла и добавляем столбцы
         data = await read_table_google_sheets("Бот: встреча", sheet_name)
         data['user_ID'] = ""
         data['help_request'] = ""
         data['photo'] = ""
         data.to_sql(table_name, sq.connect('appointment.db'), index=False)
+        #Считываем из файликов ПДН
         ID = pd.read_excel(os.path.abspath("ID.xlsx"))
         ID.to_sql("ID", sq.connect('appointment.db'), index=False)
         IDTM = pd.read_excel(os.path.abspath("IDTM.xlsx"))
         IDTM.to_sql("IDTM", sq.connect('appointment.db'), index=False)
         IDTD = pd.read_excel(os.path.abspath("IDTD.xlsx"))
         IDTD.to_sql("IDTD", sq.connect('appointment.db'), index=False)
-
         helpR = pd.DataFrame(columns=['ID_help', 'user_ID', 'text_message'])
         helpR.to_sql("Help", sq.connect('appointment.db'), index=False)
-
+    #Проверка на существование таблицы ID
     cur.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='ID'")
     result = cur.fetchone()
     if result is None:
         ID = pd.read_excel(os.path.abspath("ID.xlsx"))
         ID.to_sql("ID", sq.connect('appointment.db'), index=False)
+    # Проверка на существование таблицы IDTM
     cur.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='IDTM'")
     result = cur.fetchone()
     if result is None:
         IDTM = pd.read_excel(os.path.abspath("IDTM.xlsx"))
         IDTM.to_sql("IDTM", sq.connect('appointment.db'), index=False)
+    # Проверка на существование таблицы IDND
     cur.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='IDTD'")
     result = cur.fetchone()
     if result is None:
@@ -46,6 +51,7 @@ async def db_start(): #Создание БД
 
     table_name = 'Links'
     sheet_name = "Links"
+    #Проверка на существование таблицы ссылок
     cur.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'")
     result = cur.fetchone()
     if result is None:
@@ -63,16 +69,14 @@ async def user_id_from_db(table_name_db, user_id, user_phone): #Вносим н�
     cur.execute(sql_update_query)
     db.commit()
 
-async def help_from_db(table_name_db, help_request, user_id): #Вносим чат-айди
+async def help_from_db(table_name_db, help_request, user_id): #Вносим пометку о необходимости помощи
     sql_update_query = f"""Update {table_name_db} as A set help_request = {help_request} 
     where  user_ID = {user_id}"""
     cur.execute(sql_update_query)
     db.commit()
 
-async def table_help_insert_from_db(user_id, text_message): #Создаем пометку о необходимости помощи
-    # cur.execute(f"SELECT MAX(ID_help) FROM Help")
-    # result = cur.fetchone()
-    # hID = result[0] if not result[0] is None else 0
+async def table_help_insert_from_db(user_id, text_message): #Записываем сообщение о помощи в таблицу помощи
+
     df = pd.read_sql(f"SELECT * FROM help",
                      sq.connect('appointment.db'))
     hID = len(df) if not len(df) is None else 0
@@ -99,10 +103,7 @@ async def list_table_from_db(table_name_db): #Возвращение списк�
     df = pd.read_sql(f"SELECT * "
                      f"FROM {table_name_db}",
                      sq.connect('appointment.db')).values
-    # txt = ""
-    # for i in range(0, len(df)):
-    #     txt+= df[i][0] + " " + df[i][1] + "\n"
-    # return txt
+
     return df
 
 async def all_table_from_db(table_name_db): #Чтение всей таблицы во фрейм
@@ -129,7 +130,7 @@ async def DB_replace_from_db(table_name, sheet_name): #Перезапись БД
     data = await read_table_google_sheets(table_name, sheet_name)
     data.to_sql('CBAppointment', sq.connect('appointment.db'), if_exists='replace', index=False)
 
-async def photo_insert_from_db(user_id, table_name_db, photo): #Создаем пометку о необходимости помощи
+async def photo_insert_from_db(user_id, table_name_db, photo): #Создаем пометку о загруженной фотографии
     sql_update_query = f"""Update {table_name_db} as A set photo = {photo} 
         where  user_ID = {user_id}"""
     cur.execute(sql_update_query)
