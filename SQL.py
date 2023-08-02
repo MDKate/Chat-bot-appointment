@@ -16,6 +16,7 @@ async def db_start(): #Создание БД
         data = await read_table_google_sheets("Бот: встреча", sheet_name)
         data['user_ID'] = ""
         data['help_request'] = ""
+        data['photo'] = ""
         data.to_sql(table_name, sq.connect('appointment.db'), index=False)
         ID = pd.read_excel(os.path.abspath("ID.xlsx"))
         ID.to_sql("ID", sq.connect('appointment.db'), index=False)
@@ -89,6 +90,7 @@ async def user_id_search_from_db(table_name_db, user_phone): #Поиск пол�
     cur.execute(f"SELECT user_name "
                 f"FROM {table_name_db} JOIN ID ON {table_name_db}.ID = ID.ID "
                 f"WHERE user_phone = {user_phone}")
+
     result = cur.fetchone()
     # await result[0]
     return result[0] if result else None
@@ -127,3 +129,8 @@ async def DB_replace_from_db(table_name, sheet_name): #Перезапись БД
     data = await read_table_google_sheets(table_name, sheet_name)
     data.to_sql('CBAppointment', sq.connect('appointment.db'), if_exists='replace', index=False)
 
+async def photo_insert_from_db(user_id, table_name_db, photo): #Создаем пометку о необходимости помощи
+    sql_update_query = f"""Update {table_name_db} as A set photo = {photo} 
+        where  user_ID = {user_id}"""
+    cur.execute(sql_update_query)
+    db.commit()

@@ -3,12 +3,17 @@ import numpy as np
 import datetime
 import os
 import pathlib
+import transliterate
+import shutil
+
 import sqlite3 as sq
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-from SQL import db_start, user_id_from_db, user_id_search_from_db, DB_replace_from_db, parametr_search_from_db, all_table_from_db, list_table_from_db, help_from_db, table_help_insert_from_db
+from SQL import db_start, user_id_from_db, user_id_search_from_db, DB_replace_from_db, parametr_search_from_db, \
+    all_table_from_db, list_table_from_db, help_from_db, table_help_insert_from_db, photo_insert_from_db
 from quickstart import create_writer_google_sheets, read_table_google_sheets, update_table_google_sheets, create_table_google_sheets
+from QR import generate_qrcode
 
 botMes = Bot(open(os.path.abspath('token.txt')).read())
 bot = Dispatcher(botMes)
@@ -128,6 +133,28 @@ async def handle_message(message: types.Message):
         text = table_message['message'][10]
         await botMes.send_message(text=text, chat_id=message.chat.id)
 
+    elif message.text == 'Сгенерировать QR code':
+        img = await generate_qrcode(message.chat.id)
+        table_message = await read_table_google_sheets(table_SH_name, tab_mes)
+        text = table_message['message'][25]
+        await botMes.send_message(text=text, chat_id=message.chat.id)
+        await message.answer_photo(img)
+
+    elif message.text == 'Скачать таблицу для QR контроля':
+        df = await all_table_from_db(table_name_db)
+        df = df.loc[:, ['FIO', 'user_ID']]
+        # Сохранение в файл Excel
+        df.to_excel(('data.xlsx'), index=False)
+        # Отправка файла пользователю
+        with open('data.xlsx', 'rb') as file:
+            await botMes.send_document(message.chat.id, file)
+
+        # Удаление файла
+        import os
+
+        os.remove('data.xlsx')
+
+
     elif message.text == 'Информационный канал': #Реакция на кнопку Информационный канал
         table_message = await read_table_google_sheets(table_SH_name, tab_mes)
         text = table_message['message'][11]
@@ -208,7 +235,30 @@ async def handle_message(message: types.Message):
                                       chat_id=message.chat.id)
 
 
+@bot.message_handler(content_types=types.ContentType.PHOTO)
+async def save_photo(message: types.Message):
+    if await parametr_search_from_db('photo', table_name_db, message.chat.id) != '1':
+        # Получаем информацию о фотографии
+        photo = message.photo[-1]
 
+        # Сохраняем фотографию во временную папку
+        photo_path = os.path.join(os.path.abspath('Base/'), f'photo_{photo.file_unique_id}.jpg')
+        await photo.download(destination=photo_path)
+
+        name = await parametr_search_from_db('FIO', table_name_db, message.chat.id)
+        transcription = transliterate.translit(name, 'ru', reversed=True)
+        transcription = transcription.replace(" ", "_")
+
+        # Перемещаем фотографию в нужную папку
+        final_path = os.path.join(os.path.abspath('Base/'), f'{transcription}_1.jpg')
+        shutil.move(photo_path, final_path)
+
+        await photo_insert_from_db(message.chat.id, table_name_db, "1")
+
+        # Отправляем пользователю сообщение о сохранении фотографии
+        await message.reply("Фотография сохранена!")
+    else:
+        await message.reply("Вы уже внесли фото! Новое фото не будет сохранено.")
 
 @bot.message_handler(content_types=types.ContentType.CONTACT) #Регистрация пользователя
 async def contacts(message: types.Message, table_name_db=table_name_db):
@@ -233,12 +283,16 @@ async def contacts(message: types.Message, table_name_db=table_name_db):
             text = table_message['message'][22]
             await message.reply(text=text)
             buttons = [['Информация о прибытии', 'Информация о гостинице'], ['Информация об отъезде', 'Досуг'],
-                       ['Помощь', 'Информационный канал']]
+                       ['Помощь', 'Информационный канал'], ['Сгенерировать QR code']]
         else: #Если у пользователя роль Админ
             table_message = await read_table_google_sheets(table_SH_name, tab_mes)
             text = table_message['message'][23]
             await message.reply(text=text.format(await parametr_search_from_db('user_name', table_name_db, message.chat.id)))
-            buttons = [['Информация о прибытии', 'Информация о гостинице'], ['Информация об отъезде', 'Досуг'], ['Обновить основную таблицу', 'Обновить таблицу ПД'], ['Получить доступ к таблице']]
+            buttons = [['Информация о прибытии', 'Информация о гостинице'], ['Информация об отъезде', 'Досуг'],
+                       ['Обновить основную таблицу', 'Обновить таблицу ПД'],
+                       ['Получить доступ к таблице', 'Сгенерировать QR code'],
+                       ['Скачать таблицу для QR контроля']]
+
         markup = ReplyKeyboardMarkup(buttons, resize_keyboard=True, one_time_keyboard=False)
         table_message = await read_table_google_sheets(table_SH_name, tab_mes)
         text = table_message['message'][24]
