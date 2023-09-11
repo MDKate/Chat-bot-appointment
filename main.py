@@ -143,6 +143,7 @@ async def handle_message(message: types.Message):
             text = table_message['message'][12]
             await botMes.send_message(text=text.format('<a href="@Moiseeva_Ekaterina">@Moiseeva_Ekaterina</a>') , chat_id=message.chat.id, parse_mode=types.ParseMode.HTML)
         else: #Если человек есть в базе
+            id_chat_DDKP = open(os.path.abspath('id.txt')).read()
             phoneMeeting = "+" + str(int(await parametr_search_from_db("user_phone", table_name_db, message.chat.id)))
             buttons = [['Информация о прибытии', 'Информация о гостинице'], ['Информация об отъезде', 'Досуг'],
                    ['Помощь', 'Информационный канал']]
@@ -153,7 +154,7 @@ async def handle_message(message: types.Message):
             text = table_message['message'][14]
             await botMes.send_message(text=text.format(hID,
                                                        await parametr_search_from_db("FIO", table_name_db, message.chat.id),
-                                                       f'<a href="{phoneMeeting}">{phoneMeeting}</a>', message.text), chat_id='-899649626', parse_mode=types.ParseMode.HTML)
+                                                       f'<a href="{phoneMeeting}">{phoneMeeting}</a>', message.text), chat_id=id_chat_DDKP, parse_mode=types.ParseMode.HTML)
 
     elif message.text == 'Обновить основную таблицу': #Реакция на кнопку Обновить основную таблицу (иногда матерится)
         db_table = await all_table_from_db(table_name_db)
