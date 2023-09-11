@@ -131,7 +131,7 @@ async def handle_message(message: types.Message):
     elif message.text == 'Информационный канал': #Реакция на кнопку Информационный канал
         table_message = await read_table_google_sheets(table_SH_name, tab_mes)
         text = table_message['message'][11]
-        await botMes.send_message(text=text.format('<a href="https://t.me/+l15DTn95GDc4ZWRi">ссылка</a>'), chat_id=message.chat.id, parse_mode=types.ParseMode.HTML)
+        await botMes.send_message(text=text.format('<a href="https://t.me/+qkAdTCzGt89jYzgy">ссылка</a>'), chat_id=message.chat.id, parse_mode=types.ParseMode.HTML)
 
 
     elif await parametr_search_from_db('help_request', table_name_db, message.chat.id) == '1': #Пересылка запроса о помощи
