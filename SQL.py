@@ -111,6 +111,12 @@ async def all_table_from_db(table_name_db): #Чтение всей таблиц�
                      sq.connect('appointment.db'))
     return df
 
+async def CBA_table_from_db(table_name_db): #Чтение всей таблицы во фрейм
+    df = pd.read_sql(f"SELECT * "
+                     f"FROM {table_name_db} ",
+                     sq.connect('appointment.db'))
+    return df
+
 async def parametr_search_from_db(parametr, table_name_db, user_ID): #Поиск любого параметра
     # cursor = db.cursor()
     cur.execute(f"SELECT {parametr} "

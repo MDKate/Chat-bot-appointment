@@ -7,7 +7,7 @@ import sqlite3 as sq
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-from SQL import db_start, user_id_from_db, user_id_search_from_db, DB_replace_from_db, parametr_search_from_db, all_table_from_db, list_table_from_db, help_from_db, table_help_insert_from_db
+from SQL import db_start, user_id_from_db, user_id_search_from_db, DB_replace_from_db, parametr_search_from_db, all_table_from_db, list_table_from_db, help_from_db, table_help_insert_from_db, CBA_table_from_db
 from quickstart import create_writer_google_sheets, read_table_google_sheets, update_table_google_sheets, create_table_google_sheets
 
 botMes = Bot(open(os.path.abspath('token.txt')).read())
@@ -157,24 +157,45 @@ async def handle_message(message: types.Message):
                                                        f'<a href="{phoneMeeting}">{phoneMeeting}</a>', message.text), chat_id=id_chat_DDKP, parse_mode=types.ParseMode.HTML)
 
     elif message.text == 'Обновить основную таблицу': #Реакция на кнопку Обновить основную таблицу (иногда матерится)
-        db_table = await all_table_from_db(table_name_db)
+        db_table = await CBA_table_from_db(table_name_db)
         sh_table = await read_table_google_sheets(table_SH_name, sheet_name)
+        db_table = db_table.sort_values(by='ID')
+        sh_table = sh_table.sort_values(by='ID')
         out_table = sh_table.copy()
         out_table['user_ID'] = ""
         out_table['help_request'] = ""
         db_table = db_table.astype({'ID': object})
 
-        for i in range(0, len(sh_table)):
+        for i in sh_table['ID'].values:
             try:
-                out_table['user_ID'][i] = (db_table[sh_table['ID'] == str(db_table['ID'][i])]['user_ID'].values)[0]
+                # print(sh_table['ID'][i])
+                user_ID = db_table[db_table['ID'] == i]['user_ID'].values[0]
+                out_table['user_ID'][out_table[out_table['ID'] == i].index[0]] = db_table['user_ID'][db_table[db_table['user_ID'] == user_ID].index[0]]
+                print(out_table['user_ID'][out_table[out_table['ID'] == i].index[0]])
             except:
-                out_table['user_ID'][i] = np.nan
+                out_table['user_ID'][out_table[out_table['ID'] == i].index[0]] = np.nan
 
-        for i in range(0, len(sh_table)):
+        for i in sh_table['ID'].values:
             try:
-                out_table['help_request'][i] = (db_table[sh_table['ID'] == str(db_table['ID'][i])]['help_request'].values)[0]
+                # print(sh_table['ID'][i])
+                user_ID = db_table[db_table['ID'] == i]['help_request'].values[0]
+                out_table['help_request'][out_table[out_table['ID'] == i].index[0]] = db_table['help_request'][
+                    db_table[db_table['help_request'] == user_ID].index[0]]
             except:
-                out_table['help_request'][i] = np.nan
+                out_table['help_request'][out_table[out_table['ID'] == i].index[0]] = np.nan
+
+
+        # for i in range(0, len(sh_table)):
+        #     try:
+        #         out_table['user_ID'][i] = (db_table[sh_table['ID'] == str(db_table['ID'][i])]['user_ID'].values)[0]
+        #     except:
+        #         out_table['user_ID'][i] = np.nan
+        #
+        # for i in range(0, len(sh_table)):
+        #     try:
+        #         out_table['help_request'][i] = (db_table[sh_table['ID'] == str(db_table['ID'][i])]['help_request'].values)[0]
+        #     except:
+        #         out_table['help_request'][i] = np.nan
 
 
         out_table.to_sql('CBAppointment', sq.connect('appointment.db'), if_exists='replace', index=False)
