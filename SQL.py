@@ -103,13 +103,13 @@ async def list_table_from_db(table_name_db): #Возвращение списк�
     # return txt
     return df
 
-async def all_table_from_db(table_name_db): #Чтение всей таблицы во фрейм
-    df = pd.read_sql(f"SELECT * "
-                     f"FROM {table_name_db} AS A JOIN ID AS B ON A.ID = B.ID "
-                     f"JOIN IDTM AS C ON A.IDTM = C.IDTM "
-                     f"JOIN IDTD AS D ON A.IDTD = D.IDTD ",
-                     sq.connect('appointment.db'))
-    return df
+# async def all_table_from_db(table_name_db): #Чтение всей таблицы во фрейм
+#     df = pd.read_sql(f"SELECT * "
+#                      f"FROM {table_name_db} AS A JOIN ID AS B ON A.ID = B.ID "
+#                      f"JOIN IDTM AS C ON A.IDTM = C.IDTM "
+#                      f"JOIN IDTD AS D ON A.IDTD = D.IDTD ",
+#                      sq.connect('appointment.db'))
+#     return df
 
 async def CBA_table_from_db(table_name_db): #Чтение всей таблицы во фрейм
     df = pd.read_sql(f"SELECT * "
@@ -117,19 +117,58 @@ async def CBA_table_from_db(table_name_db): #Чтение всей таблиц�
                      sq.connect('appointment.db'))
     return df
 
-async def parametr_search_from_db(parametr, table_name_db, user_ID): #Поиск любого параметра
+# async def parametr_search_from_db(parametr, table_name_db, user_ID): #Поиск любого параметра
+#     # cursor = db.cursor()
+#     cur.execute(f"SELECT {parametr} "
+#                 f"FROM {table_name_db} AS A "
+#                 f"JOIN ID AS B ON A.ID = B.ID "
+#                 f"JOIN IDTM AS C ON A.IDTM = C.IDTM "
+#                 f"JOIN IDTD AS D ON A.IDTD = D.IDTD "
+#                 f"WHERE A.user_ID = {user_ID}")
+#     result = cur.fetchone()
+#     # await result[0]
+#     return result[0] if result else None
+
+async def search_from_db(parametr, table_name_db, user_ID): #Поиск любого параметра по таблице CBAppointment
+    # cursor = db.cursor()
+    cur.execute(f"SELECT {parametr} "
+                f"FROM {table_name_db} " 
+                f"WHERE user_ID = {user_ID} ")
+    result = cur.fetchone()
+    # print(cur.execute)
+    # await result[0]
+    return result[0] if result else None
+
+async def User_search_from_db(parametr, table_name_db, user_ID): #Поиск по таблице ID
+    # cursor = db.cursor()
+    cur.execute(f"SELECT {parametr}"
+                f"FROM {table_name_db} AS A "
+                f"JOIN ID AS B ON A.ID = B.ID "
+                f"WHERE A.user_ID = {user_ID} ")
+    result = cur.fetchone()
+    # await result[0]
+    return result[0] if result else None
+async def meeting_search_from_db(parametr, table_name_db, user_ID): #Поиск по таблице meeting
     # cursor = db.cursor()
     cur.execute(f"SELECT {parametr} "
                 f"FROM {table_name_db} AS A "
-                f"JOIN ID AS B ON A.ID = B.ID "
                 f"JOIN IDTM AS C ON A.IDTM = C.IDTM "
+                f"WHERE A.user_ID = {user_ID}")
+    result = cur.fetchone()
+    # await result[0]
+    return result[0] if result else None
+
+async def driver_search_from_db(parametr, table_name_db, user_ID): #Поиск по таблице driver
+    # cursor = db.cursor()
+    cur.execute(f"SELECT {parametr} "
+                f"FROM {table_name_db} AS A "
                 f"JOIN IDTD AS D ON A.IDTD = D.IDTD "
                 f"WHERE A.user_ID = {user_ID}")
     result = cur.fetchone()
     # await result[0]
     return result[0] if result else None
 
-async def DB_replace_from_db(table_name, sheet_name): #Перезапись БД из гугл-таблицы
-    data = await read_table_google_sheets(table_name, sheet_name)
-    data.to_sql('CBAppointment', sq.connect('appointment.db'), if_exists='replace', index=False)
+# async def DB_replace_from_db(table_name, sheet_name): #Перезапись БД из гугл-таблицы
+#     data = await read_table_google_sheets(table_name, sheet_name)
+#     data.to_sql('CBAppointment', sq.connect('appointment.db'), if_exists='replace', index=False)
 
