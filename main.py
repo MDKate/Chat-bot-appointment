@@ -156,7 +156,7 @@ async def handle_message(message: types.Message):
     elif await search_from_db('help_request', table_name_db, message.chat.id) == '1': #Пересылка запроса о помощи
         await help_from_db(table_name_db, '0', message.chat.id)
         hID = await table_help_insert_from_db(message.chat.id, message.text)
-        if await search_from_db("user_phone", table_name_db, message.chat.id) is None or len(str(await User_search_from_db("user_phone", table_name_db, message.chat.id)))<3:
+        if await User_search_from_db("user_phone", table_name_db, message.chat.id) is None or len(str(await User_search_from_db("user_phone", table_name_db, message.chat.id)))<3:
             #Если человека нет в базе
             table_message = await read_table_google_sheets(table_SH_name, tab_mes)
             text = table_message['message'][12]
